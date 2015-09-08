@@ -289,6 +289,7 @@ void rgb_pcl::getTracker(std::vector<PointCloudPtr> object_clouds, Mat displayIm
 		trackerList[count].step();
 		if(!trackerList[count].isAlive()){
 			trackerList.erase(trackerList.begin()+count);
+			count --;
 		}else if(trackerList[count].isFound() && !trackerList[count].isGone()){
 #if DISPLAY
 			drawTrackers(displayImage, trackerList[count], to_string(count));
