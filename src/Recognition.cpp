@@ -422,6 +422,8 @@ void rgb_pcl::stateDetection(){
 				state = state + "small ";
 			}
 			
+			cout<<volume<<" = ";
+			
 	// 		double velocity = abs(tracker.getVelocity().x) + abs(tracker.getVelocity().y) + abs(tracker.getVelocity().z);
 	// 		
 	// 		if(velocity > 0.006){
