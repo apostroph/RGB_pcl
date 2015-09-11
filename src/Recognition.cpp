@@ -411,7 +411,7 @@ void rgb_pcl::stateDetection(){
 	RGB_pcl::States message;
 	cout<<"RGB: ";
 	for(auto tracker: trackerList){
-		if(tracker.isFound()){
+		if(!tracker.isGone()){
 			string state;
 			double volume = tracker.getLength() * tracker.getWidth() * tracker.getHeight();
 			if(volume > 0.0016){
@@ -421,39 +421,21 @@ void rgb_pcl::stateDetection(){
 			}else{
 				state = state + "small ";
 			}
-			
-	// 		double velocity = abs(tracker.getVelocity().x) + abs(tracker.getVelocity().y) + abs(tracker.getVelocity().z);
-	// 		
-	// 		if(velocity > 0.006){
-	// 			state = state + "moving ";
-	// 		}else{
-	// 			state = state + "stationary ";
-	// 		}
-			
-	// 		if(tracker.getHue() > 30 && tracker.getHue() < 60){
-	// 			state = state + "yellow ";
-	// 		}else if(tracker.getHue() > 80 && tracker.getHue() < 130){
-	// 			state = state + "green ";
-	// 		}else if(tracker.getHue() > 270 && tracker.getHue() < 310){
-	// 			state = state + "pink ";
-	// 		}else if(tracker.getHue() > 310 && tracker.getHue() < 360){
-	// 			state = state + "red ";
-	// 		}
 
 			int hue_cat = tracker.getHue()/36;
 			state = state + to_string(hue_cat) + " ";
 			
-	// 		double width, height;
-	// 		int points = 1;
-	// 		
-	// 		width = tracker.getWidth();
-	// 		height = tracker.getHeight();
-	// 		points = tracker.getNumberOfPoints();
+			double x_c = tracker.getPosition().x;
+			double y_c = tracker.getPosition().y;
 			
-			state = state + "round ";
-			
-			if(tracker.isGone()){
-				state = state + "gone ";
+			if(x_c > 0.68 && x_c < 0.76 && y_c > 0.01 && y_c < 0.09){
+				state = state + "in ";
+			}else if(x_c > 0.66 && x_c < 0.74 && y_c > -0.17 && y_c < -0.09){
+				state = state + "right ";
+			}else if(x_c > 0.66 && x_c < 0.74 && y_c > 0.14 && y_c < 0.22){
+				state = state + "left ";
+			}else if(x_c > 0.55 && x_c < 0.64 && y_c > 0.0 && y_c < 0.08){
+				state = state + "front ";
 			}
 			
 			message.states.push_back(state);
@@ -466,6 +448,7 @@ void rgb_pcl::stateDetection(){
 			message.clusters.push_back(output);
 			
 			cout<<state<<"  ::  ";
+// 			cout<<x_c<<" : "<<y_c<<endl;
 		}
 		
 	}
