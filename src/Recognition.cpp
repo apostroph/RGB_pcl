@@ -429,7 +429,7 @@ void rgb_pcl::stateDetection(){
 			double y_c = tracker.getPosition().y;
 			
 			if(x_c > 0.68 && x_c < 0.76 && y_c > 0.01 && y_c < 0.09){
-				state = state + "in ";
+				state = state + "center ";
 			}else if(x_c > 0.66 && x_c < 0.74 && y_c > -0.17 && y_c < -0.09){
 				state = state + "right ";
 			}else if(x_c > 0.66 && x_c < 0.74 && y_c > 0.14 && y_c < 0.22){
