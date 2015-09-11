@@ -414,7 +414,7 @@ void rgb_pcl::stateDetection(){
 		if(!tracker.isGone()){
 			string state;
 			double volume = tracker.getLength() * tracker.getWidth() * tracker.getHeight();
-			if(volume > 0.0016){
+			if(volume > 0.002){
 				state = state + "big ";
 			}else if(volume > 0.0006){
 				state = state + "medium ";
