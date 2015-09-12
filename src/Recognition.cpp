@@ -423,8 +423,7 @@ void rgb_pcl::stateDetection(){
 			}
 
 			int hue_cat = tracker.getHue();
-			state = state + to_string(hue_cat) + " ";
-			cout<<tracker.getHue()<<endl;
+// 			cout<<tracker.getHue()<<endl;
 			
 			if(hue_cat >= 25 && hue_cat <= 70){
 				hue_cat = 1;
@@ -437,6 +436,8 @@ void rgb_pcl::stateDetection(){
 			}else if(hue_cat >= 311 && hue_cat <= 360){
 				hue_cat = 5;
 			}
+			
+			state = state + to_string(hue_cat) + " ";
 			
 			double x_c = tracker.getPosition().x;
 			double y_c = tracker.getPosition().y;
