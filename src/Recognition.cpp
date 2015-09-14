@@ -254,7 +254,7 @@ void rgb_pcl::stateDetection(){
 			int hue_cat = tracker.getHue();
 // 			cout<<tracker.getHue()<<endl;
 			
-			if(hue_cat >= 25 && hue_cat <= 70){
+			if(hue_cat >= 0 && hue_cat <= 70){
 				hue_cat = 1;
 			}else if(hue_cat >= 71 && hue_cat <= 160){
 				hue_cat = 2;
