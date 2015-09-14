@@ -81,9 +81,15 @@ bool track_3d::updateTracker(Point3d position, double color, int size, pcl::Poin
 		moved = false;
 	}
 	
-	double limit_x[2] = {DBL_MIN, DBL_MAX};
-	double limit_y[2] = {DBL_MIN, DBL_MAX};
-	double limit_z[2] = {DBL_MIN, DBL_MAX};
+	double limit_x[2] = {pointCloud->points[0].x, pointCloud->points[0].x};
+	double limit_y[2] = {pointCloud->points[0].y, pointCloud->points[0].y};
+	double limit_z[2] = {pointCloud->points[0].z, pointCloud->points[0].z};
+	
+	
+	colors.clear();
+	for(int c = 0; c < 5; c++){
+		colors.push_back(0);
+	}
 	
 	for(auto cloud_point: pointCloud->points){
 		if(cloud_point.x > limit_x[0]){
@@ -101,7 +107,18 @@ bool track_3d::updateTracker(Point3d position, double color, int size, pcl::Poin
 		}else if(cloud_point.z < limit_z[1]){
 			limit_z[1] = cloud_point.z;
 		}
+		colors[getColorHist(cloud_point)] ++;
 	}
+	
+	int index = 0;
+	for(auto color: colors){
+		if(color > 20){
+			cout<<index<<" ";
+		}
+		index ++;
+	}
+	cout<<endl;
+	
 	length = limit_x[0]-limit_x[1];
 	width  = limit_y[0]-limit_y[1];
 	height = limit_z[0]-limit_z[1];
@@ -118,6 +135,42 @@ bool track_3d::updateTracker(Point3d position, double color, int size, pcl::Poin
 	acquired = true;
 	
 	return acquired;
+}
+
+int track_3d::getColorHist(pcl::PointXYZRGB cloud_point){
+	double R, G, B;
+	double hue = 0;
+	int hue_cat = 0;
+	
+	R = 0; G = 0; B = 0;
+	R += cloud_point.r; G += cloud_point.g; B += cloud_point.b; 
+	
+	double Cmax = maximum(R, G, B);
+	double Cmin = minimum(R, G, B);
+	double delta = Cmax - Cmin;
+	if(R > G && R > B){
+		hue = 60*((double)((G-B)/delta));
+	}else if(G > R && G > B){
+		hue = 60*((double)((B-R)/delta)+2);
+	}else if(B > R && B > G){
+		hue = 60*((double)((R-G)/delta)+4);
+	}
+	if(hue < 0)
+		hue += 360;
+	
+	if(hue_cat >= 0 && hue_cat <= 70){
+		hue_cat = 0;
+	}else if(hue_cat >= 71 && hue_cat <= 160){
+		hue_cat = 1;
+	}else if(hue_cat >= 161 && hue_cat <= 250){
+		hue_cat = 2;
+	}else if(hue_cat >= 251 && hue_cat <= 310){
+		hue_cat = 3;
+	}else if(hue_cat >= 311 && hue_cat <= 360){
+		hue_cat = 4;
+	}
+	
+	return hue_cat;
 }
 
 bool track_3d::isAlive(){
@@ -161,6 +214,38 @@ int track_3d::getNumberOfPoints(){
 }
 
 
+
+/* Function maximum definition */
+/* x, y and z are parameters */
+double track_3d::maximum(double x, double y, double z) {
+	double max = x; /* assume x is the largest */
+
+	if (y > max) { /* if y is larger than max, assign y to max */
+		max = y;
+	} /* end if */
+
+	if (z > max) { /* if z is larger than max, assign z to max */
+		max = z;
+	} /* end if */
+
+	return max; /* max is the largest value */
+} /* end function maximum */
+
+/* Function minimum definition */
+/* x, y and z are parameters */
+double track_3d::minimum(double x, double y, double z) {
+	double min = x; /* assume x is the smallest */
+
+	if (y < min) { /* if y is smaller than min, assign y to min */
+		min = y;
+	} /* end if */
+
+	if (z < min) { /* if z is smaller than min, assign z to min */
+		min = z;
+	} /* end if */ 
+
+	return min; /* min is the smallest value */
+} /* end function minimum */
 
 double track_3d::gaussian(double in, double mean, double std)
 {

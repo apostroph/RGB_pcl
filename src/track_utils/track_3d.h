@@ -26,6 +26,8 @@ public:
 	bool updateTracker(Point3d position, double color, int size, pcl::PointCloud<pcl::PointXYZRGB>::Ptr pointCloud);
 	double isRecognized(Point3d position, double color, int size);
 	
+	int getColorHist(pcl::PointXYZRGB cloud_point);
+	
 	bool isAlive();
 	bool isFound();
 	bool isGone();
@@ -60,6 +62,7 @@ private:
 	int approxSize; //number of pixel (or points)
 	double meanColor; //Average Hue
 	pcl::PointCloud<pcl::PointXYZRGB> point_cloud_tracked;
+	vector<int> colors;
 
 	int tracked_counter;
 	bool tracked; //If the object is activey tracked
@@ -71,5 +74,7 @@ private:
 	double length, width, height;
 	
 	double gaussian(double in, double mean, double std);
+	double maximum(double x, double y, double z);
+	double minimum(double x, double y, double z);
 };
 
