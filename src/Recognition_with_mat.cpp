@@ -3,13 +3,19 @@
  * Authors: Jimmy Baraglia
  * Public License for more details
 */
+
+#define PUBLISH_CLOUDS 1
+
+#define PR2 1
+#define DISPLAY 0
+
 #define DESIRED_FPS 30
 
 #include "Recognition.h"
 
 
 rgb_pcl::rgb_pcl(int argc, char** argv):
-target_frame("")
+imgCount(0), target_frame("")
 {    
 	//namedWindow("Vision and states", CV_WINDOW_AUTOSIZE+WINDOW_OPENGL);
 	n = ros::NodeHandle("~");
@@ -18,7 +24,12 @@ target_frame("")
 	signal(SIGINT, &rgb_pcl::sigintHandler);
 	
 	// Create a ROS subscriber for the input point cloud
+#if PR2
 	sub = n.subscribe ("/head_mount_kinect/depth_registered/points", 1, &rgb_pcl::cloud_cb, this);
+#endif
+#if !PR2
+	sub = n.subscribe ("/kinect1/depth_registered/points", 1, &rgb_pcl::cloud_cb, this);
+#endif
 	// Create a ROS publisher for the output point cloud
 	pub = n.advertise<sensor_msgs::PointCloud2> ("point_cloud_jimmy", 1);
 
@@ -45,17 +56,19 @@ void rgb_pcl::sigintHandler(int sig)
 	return;
 }
 
-
-//Method called everytime a pointcloud is received
 void rgb_pcl::cloud_cb (const sensor_msgs::PointCloud2ConstPtr& input){
 	
 	// Container for original & filtered data
+#if PR2
 	if(target_frame.find(base_frame) == std::string::npos){
 		getTransformCloud(input, *input);
 	}
 	sensor_msgs::PointCloud2 in = *input;
 	sensor_msgs::PointCloud2 out;
 	pcl_ros::transformPointCloud(target_frame, net_transform, in, out);
+#endif
+	
+// 	ROS_INFO("Cloud acquired...");
 	
 	pcl::PCLPointCloud2* cloud = new pcl::PCLPointCloud2; 
 	pcl::PCLPointCloud2ConstPtr cloudPtr(cloud);
@@ -67,9 +80,16 @@ void rgb_pcl::cloud_cb (const sensor_msgs::PointCloud2ConstPtr& input){
 						 
 	Mat displayImage = cv::Mat(Size(640, 480), CV_8UC3);
 	displayImage = Scalar(120);
+
 	// Convert to PCL data type
+#if PR2
 	pcl_conversions::toPCL(out, *cloud);
-	
+#endif
+#if !PR2
+	pcl_conversions::toPCL(*input, *cloud);
+#endif
+// 	ROS_INFO("\t=>Cloud rotated...");
+
 	// Perform the actual filtering
 	pcl::VoxelGrid<pcl::PCLPointCloud2> sor;
 	sor.setInputCloud (cloudPtr);
@@ -85,6 +105,7 @@ void rgb_pcl::cloud_cb (const sensor_msgs::PointCloud2ConstPtr& input){
 	std::vector<PointCloudPtr> object_clouds;
 	pcl::PointCloud<pcl::PointXYZRGB> combinedCloud;
 	
+#if PR2
 	make_crop_box_marker(marker_publisher, base_frame, 0, 0.2, -1, 0.2, 1.3, 2, 1.3);
 // 	Define your cube with two points in space: 
 	Eigen::Vector4f minPoint; 
@@ -102,37 +123,71 @@ void rgb_pcl::cloud_cb (const sensor_msgs::PointCloud2ConstPtr& input){
 	cropFilter.setMax(maxPoint); 
 
    	cropFilter.filter (*cloud_filtered); 
+#endif
+	
+#if !PR2
+	//Rotate the point cloud
+	Eigen::Affine3f transform_1 = Eigen::Affine3f::Identity();
+
+	// Define a rotation matrix (see https://en.wikipedia.org/wiki/Rotation_matrix)
+	float theta = M_PI; // The angle of rotation in radians
+
+	// Define a translation of 0 meters on the x axis
+	transform_1.translation() << 0.0, 0.0, 1.0;
+
+	// The same rotation matrix as before; tetha radians arround X axis
+	transform_1.rotate (Eigen::AngleAxisf (theta, Eigen::Vector3f::UnitX()));
+
+	// Executing the transformation
+	pcl::transformPointCloud (*cloud_filtered, *cloud_filtered, transform_1);
+#endif
 	
 	interpretTableScene(cloud_filtered, coefficients, plane_points, point_points_2d_hull, object_clouds);
 	
 	int c = 0;
+#if PUBLISH_CLOUDS
 	int ID_object = -1;
-	
+#endif
 	for(auto cloudCluster: object_clouds){
 // 		get_cloud_matching(cloudCluster); //histogram matching
 	
+#if PUBLISH_CLOUDS
 		ID_object = c;
+#endif
 		combinedCloud += *cloudCluster;
 		combinedCloud.header = cloud_filtered->header;
 		c++;
 	}
 	
+#if DISPLAY
+	drawPointCloud(combinedCloud, displayImage);
+#endif
+	
 	getTracker(object_clouds, displayImage);
 	
 	stateDetection();
+// 	ROS_INFO("\t=>Cloud analysed...");
+	
+#if PUBLISH_CLOUDS
 	
 	sensor_msgs::PointCloud2 output;
 	
-	if((int)object_clouds.size() >= ID_object && ID_object >= 0){
+	if(object_clouds.size() >= ID_object && ID_object >= 0){
 		pcl::toROSMsg(combinedCloud, output);
 		// Publish the data
 		pub.publish (output);
 	}
 	
+#endif
+	
 	end = ros::Time::now();
 	std::stringstream ss;
 	ss <<(end-begin);
 	string s_FPS = ss.str();
+#if DISPLAY
+	cv::putText(displayImage, "FPS: "+to_string((int)1/(stof(s_FPS))) + "   Desired: "+to_string(DESIRED_FPS), cv::Point(10, 10), CV_FONT_HERSHEY_COMPLEX, 0.4, Scalar(0,0,0));
+	imshow("RGB", displayImage);
+#endif
 	waitKey(1);
 
 	begin = ros::Time::now();
@@ -209,8 +264,46 @@ void rgb_pcl::getTracker(std::vector<PointCloudPtr> object_clouds, Mat displayIm
 		if(!trackerList[count].isAlive()){
 			trackerList.erase(trackerList.begin()+count);
 			count --;
+		}else if(trackerList[count].isFound() && !trackerList[count].isGone()){
+#if DISPLAY
+			drawTrackers(displayImage, trackerList[count], to_string(count));
+#endif
 		}
 	}
+}
+
+void rgb_pcl::drawTrackers(Mat &img, track_3d input_tracker, string name){
+	double x, y;
+	double width, height;
+	
+	x = input_tracker.getPosition().x;
+	y = input_tracker.getPosition().y;
+	width = input_tracker.getLength();
+	height = input_tracker.getWidth();
+	
+	cv::Point tracker_center;
+	cv::Point tracker_size;
+	
+	//transform center position from kinect space to 640*480 Mat
+// 	tracker_center.x = (x) * 640;
+// 	tracker_center.y = (-y+0.5) * 480;
+	
+	tracker_center.x = (-y)*320 + 320;
+	tracker_center.y = 480-(x)*320;
+	
+	//transform tracker size from kinect space to 640*480 Mat
+	tracker_size.x = abs(height) * 320;
+	tracker_size.y = abs(width) * 320;
+	
+// 	cout<<tracker_size.x<<" :: "<<tracker_size.y<<endl;
+	
+	
+	cv::Point p1(tracker_center.x-(tracker_size.x/2.), tracker_center.y-(tracker_size.y/2.));
+	cv::Point p2(tracker_center.x+(tracker_size.x/2.), tracker_center.y+(tracker_size.y/2.));
+	
+	rectangle(img, p1, p2, Scalar(0 , 255, 0), 2);
+	
+	cv::putText(img, name, cv::Point(tracker_center.x, tracker_center.y-10-(tracker_size.y/2.)), CV_FONT_HERSHEY_COMPLEX, 0.4, Scalar(0,0,0));
 }
 
 void rgb_pcl::getCloudFeatures(cv::Point3d &position, double &hue, PointCloudPtr cloudCluster){
@@ -325,6 +418,19 @@ bool rgb_pcl::loop() {
     return true;
 }
 
+
+void rgb_pcl::drawPointCloud(pcl::PointCloud<pcl::PointXYZRGB> combinedCloud, Mat displayImage){
+	
+	for(auto pointIT: combinedCloud.points){
+		double x, y;
+		x = (-pointIT.y)*320 + 320;
+		y = 480-(pointIT.x)*400;
+		if(x < 640 && x > 0 && y < 480 && y > 0){
+			circle(displayImage, cv::Point(x, y), 3, Scalar(pointIT.b, pointIT.g, pointIT.r), -1);
+		}
+	}
+}
+
 /* Function maximum definition */
 /* x, y and z are parameters */
 double rgb_pcl::maximum(double x, double y, double z) {
@@ -352,7 +458,7 @@ double rgb_pcl::minimum(double x, double y, double z) {
 
 	if (z < min) { /* if z is smaller than min, assign z to min */
 		min = z;
-	} /* end if */ 
+	} /* end if */
 
 	return min; /* min is the smallest value */
 } /* end function minimum */
