@@ -36,6 +36,7 @@ public:
 	void drawTrajectory(Mat img);
 	
 	double getHue();
+	string getAllHues();
 	
 	double getLength();
 	double getWidth();

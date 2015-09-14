@@ -110,15 +110,6 @@ bool track_3d::updateTracker(Point3d position, double color, int size, pcl::Poin
 		colors[getColorHist(cloud_point)] ++;
 	}
 	
-	int index = 0;
-	for(auto color: colors){
-		if(color > 20){
-			cout<<index<<" ";
-		}
-		index ++;
-	}
-	cout<<endl;
-	
 	length = limit_x[0]-limit_x[1];
 	width  = limit_y[0]-limit_y[1];
 	height = limit_z[0]-limit_z[1];
@@ -158,15 +149,15 @@ int track_3d::getColorHist(pcl::PointXYZRGB cloud_point){
 	if(hue < 0)
 		hue += 360;
 	
-	if(hue_cat >= 0 && hue_cat <= 70){
+	if(hue >= 0 && hue <= 60){
 		hue_cat = 0;
-	}else if(hue_cat >= 71 && hue_cat <= 160){
+	}else if(hue >= 61 && hue <= 160){
 		hue_cat = 1;
-	}else if(hue_cat >= 161 && hue_cat <= 250){
+	}else if(hue >= 161 && hue <= 250){
 		hue_cat = 2;
-	}else if(hue_cat >= 251 && hue_cat <= 310){
+	}else if(hue >= 251 && hue <= 310){
 		hue_cat = 3;
-	}else if(hue_cat >= 311 && hue_cat <= 360){
+	}else if(hue >= 311 && hue <= 360){
 		hue_cat = 4;
 	}
 	
@@ -190,6 +181,19 @@ bool track_3d::isFound(){
  
 bool track_3d::isMoving(){
 	return moved;
+}
+
+string track_3d::getAllHues(){
+	string hues = "";
+	
+	int index = 1;
+	for(auto color: colors){
+		if(color > 100){
+			hues = hues + to_string(index) + " ";
+		}
+		index ++;
+	}
+	return hues;
 }
  
 double track_3d::getHue(){
