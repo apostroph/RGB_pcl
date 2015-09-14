@@ -71,7 +71,7 @@ private:
   void cloud_cb (const sensor_msgs::PointCloud2ConstPtr& input);
   void getTransformCloud(const sensor_msgs::PointCloud2ConstPtr& cloud_msg_ptr, const sensor_msgs::PointCloud2& upright_cloud_msg);
   void getCloudFeatures(cv::Point3d &position, double &hue, PointCloudPtr object_clouds);
-  void getTracker(std::vector<PointCloudPtr> object_clouds, Mat displayImage);
+  void getTracker(std::vector<PointCloudPtr> object_clouds);
   
   void stateDetection();
   

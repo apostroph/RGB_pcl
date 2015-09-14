@@ -57,7 +57,7 @@ void rgb_pcl::cloud_cb (const sensor_msgs::PointCloud2ConstPtr& input){
 	sensor_msgs::PointCloud2 out;
 	pcl_ros::transformPointCloud(target_frame, net_transform, in, out);
 	
-	pcl::PCLPointCloud2* cloud = new pcl::PCLPointCloud2; 
+	pcl::PCLPointCloud2::Ptr cloud (new pcl::PCLPointCloud2);
 	pcl::PCLPointCloud2ConstPtr cloudPtr(cloud);
 	pcl::PCLPointCloud2::Ptr cloud_filtered_blob (new pcl::PCLPointCloud2);
 				  
@@ -117,7 +117,7 @@ void rgb_pcl::cloud_cb (const sensor_msgs::PointCloud2ConstPtr& input){
 		c++;
 	}
 	
-	getTracker(object_clouds, displayImage);
+	getTracker(object_clouds);
 	
 	stateDetection();
 	
@@ -128,14 +128,6 @@ void rgb_pcl::cloud_cb (const sensor_msgs::PointCloud2ConstPtr& input){
 		// Publish the data
 		pub.publish (output);
 	}
-	
-	end = ros::Time::now();
-	std::stringstream ss;
-	ss <<(end-begin);
-	string s_FPS = ss.str();
-	waitKey(1);
-
-	begin = ros::Time::now();
 	
 }
 
@@ -155,7 +147,7 @@ void rgb_pcl::getTransformCloud(const sensor_msgs::PointCloud2ConstPtr& cloud_ms
 	net_transform = transform;
 }
 
-void rgb_pcl::getTracker(std::vector<PointCloudPtr> object_clouds, Mat displayImage){
+void rgb_pcl::getTracker(std::vector<PointCloudPtr> object_clouds){
 	
 	
 	//Assign tracker to the clouds
