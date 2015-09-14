@@ -272,11 +272,11 @@ void rgb_pcl::stateDetection(){
 			double x_c = tracker.getPosition().x;
 			double y_c = tracker.getPosition().y;
 			
-			if(x_c > 0.72 && x_c < 0.8 && y_c > 0.01 && y_c < 0.09){
+			if(x_c > 0.76 && x_c < 0.84 && y_c > 0.01 && y_c < 0.09){
 				state = state + "back ";
-			}else if(x_c > 0.66 && x_c < 0.74 && y_c > -0.2 && y_c < -0.1){
+			}else if(x_c > 0.62 && x_c < 0.70 && y_c > -0.6 && y_c < -0.08){
 				state = state + "right ";
-			}else if(x_c > 0.66 && x_c < 0.74 && y_c > 0.18 && y_c < 0.26){
+			}else if(x_c > 0.62 && x_c < 0.70 && y_c > 0.15 && y_c < 0.24){
 				state = state + "left ";
 			}else if(x_c > 0.55 && x_c < 0.64 && y_c > 0.0 && y_c < 0.08){
 				state = state + "front ";
