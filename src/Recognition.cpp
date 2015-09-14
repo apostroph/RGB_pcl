@@ -251,22 +251,23 @@ void rgb_pcl::stateDetection(){
 				state = state + "small ";
 			}
 
-			int hue_cat = tracker.getHue();
+// 			int hue_cat = tracker.getHue();
+// // 			cout<<tracker.getHue()<<endl;
+// 			
+// 			if(hue_cat >= 0 && hue_cat <= 70){
+// 				hue_cat = 1;
+// 			}else if(hue_cat >= 71 && hue_cat <= 160){
+// 				hue_cat = 2;
+// 			}else if(hue_cat >= 161 && hue_cat <= 250){
+// 				hue_cat = 3;
+// 			}else if(hue_cat >= 251 && hue_cat <= 310){
+// 				hue_cat = 4;
+// 			}else if(hue_cat >= 311 && hue_cat <= 360){
+// 				hue_cat = 5;
+// 			}
+			
+			state = state + tracker.getAllHues();
 // 			cout<<tracker.getHue()<<endl;
-			
-			if(hue_cat >= 0 && hue_cat <= 70){
-				hue_cat = 1;
-			}else if(hue_cat >= 71 && hue_cat <= 160){
-				hue_cat = 2;
-			}else if(hue_cat >= 161 && hue_cat <= 250){
-				hue_cat = 3;
-			}else if(hue_cat >= 251 && hue_cat <= 310){
-				hue_cat = 4;
-			}else if(hue_cat >= 311 && hue_cat <= 360){
-				hue_cat = 5;
-			}
-			
-			state = state + to_string(hue_cat) + " ";
 			
 			double x_c = tracker.getPosition().x;
 			double y_c = tracker.getPosition().y;
@@ -290,7 +291,7 @@ void rgb_pcl::stateDetection(){
 			pcl::toROSMsg(tracker.getPointCloud(), output);
 			message.clusters.push_back(output);
 			
-			cout<<state<<"  ::  ";
+			cout<<state<<":: ";
 // 			cout<<x_c<<" : "<<y_c<<endl;
 		}
 		
