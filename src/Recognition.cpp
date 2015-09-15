@@ -9,7 +9,7 @@
 
 
 rgb_pcl::rgb_pcl(int argc, char** argv):
-target_frame("")
+target_frame(""), ongoing_action(false)
 {    
 	//namedWindow("Vision and states", CV_WINDOW_AUTOSIZE+WINDOW_OPENGL);
 	n = ros::NodeHandle("~");
@@ -19,6 +19,8 @@ target_frame("")
 	
 	// Create a ROS subscriber for the input point cloud
 	sub = n.subscribe ("/head_mount_kinect/depth_registered/points", 1, &rgb_pcl::cloud_cb, this);
+	action_feedback = n.subscribe ("/action_state_feedback", 1, &rgb_pcl::fromBackend, this);
+	
 	// Create a ROS publisher for the output point cloud
 	pub = n.advertise<sensor_msgs::PointCloud2> ("point_cloud_jimmy", 1);
 
@@ -46,87 +48,99 @@ void rgb_pcl::sigintHandler(int sig)
 }
 
 
+
+void rgb_pcl::fromBackend(const std_msgs::String msg){
+	string input = msg.data.c_str();
+	if(input.compare("action_ended") == 0){
+		ongoing_action = false;
+	}else{
+		ongoing_action = true;
+	}
+}
+
 //Method called everytime a pointcloud is received
 void rgb_pcl::cloud_cb (const sensor_msgs::PointCloud2ConstPtr& input){
 	
-	// Container for original & filtered data
-	if(target_frame.find(base_frame) == std::string::npos){
-		getTransformCloud(input, *input);
-	}
-	sensor_msgs::PointCloud2 in = *input;
-	sensor_msgs::PointCloud2 out;
-	pcl_ros::transformPointCloud(target_frame, net_transform, in, out);
-	
-	pcl::PCLPointCloud2::Ptr cloud (new pcl::PCLPointCloud2);
-	pcl::PCLPointCloud2ConstPtr cloudPtr(cloud);
-	pcl::PCLPointCloud2::Ptr cloud_filtered_blob (new pcl::PCLPointCloud2);
-				  
-	pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZRGB>), 
-						 cloud_p (new pcl::PointCloud<pcl::PointXYZRGB>), 
-						 cloud_f (new pcl::PointCloud<pcl::PointXYZRGB>);
-						 
-	Mat displayImage = cv::Mat(Size(640, 480), CV_8UC3);
-	displayImage = Scalar(120);
-	// Convert to PCL data type
-	pcl_conversions::toPCL(out, *cloud);
-	
-	// Perform the actual filtering
-	pcl::VoxelGrid<pcl::PCLPointCloud2> sor;
-	sor.setInputCloud (cloudPtr);
-	sor.setLeafSize (0.005, 0.005, 0.005);
-	sor.filter (*cloud_filtered_blob);
-	
-	pcl::fromPCLPointCloud2 (*cloud_filtered_blob, *cloud_filtered);
-
-	ModelCoefficientsPtr coefficients (new pcl::ModelCoefficients);
-	
-	PointCloudPtr plane_points(new PointCloud), point_points_2d_hull(new PointCloud);
+	if(!ongoing_action){
+		// Container for original & filtered data
+		if(target_frame.find(base_frame) == std::string::npos){
+			getTransformCloud(input, *input);
+		}
+		sensor_msgs::PointCloud2 in = *input;
+		sensor_msgs::PointCloud2 out;
+		pcl_ros::transformPointCloud(target_frame, net_transform, in, out);
 		
-	std::vector<PointCloudPtr> object_clouds;
-	pcl::PointCloud<pcl::PointXYZRGB> combinedCloud;
-	
-	make_crop_box_marker(marker_publisher, base_frame, 0, 0.2, -1, 0.2, 1.3, 2, 1.3);
-// 	Define your cube with two points in space: 
-	Eigen::Vector4f minPoint; 
-	minPoint[0]=0.2;  // define minimum point x 
-	minPoint[1]=-1;  // define minimum point y 
-	minPoint[2]=0.2;  // define minimum point z 
-	Eigen::Vector4f maxPoint; 
-	maxPoint[0]=1.5;  // define max point x 
-	maxPoint[1]=1;  // define max point y 
-	maxPoint[2]=1.5;  // define max point z 
+		pcl::PCLPointCloud2::Ptr cloud (new pcl::PCLPointCloud2);
+		pcl::PCLPointCloud2ConstPtr cloudPtr(cloud);
+		pcl::PCLPointCloud2::Ptr cloud_filtered_blob (new pcl::PCLPointCloud2);
+					  
+		pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZRGB>), 
+							cloud_p (new pcl::PointCloud<pcl::PointXYZRGB>), 
+							cloud_f (new pcl::PointCloud<pcl::PointXYZRGB>);
+							
+		Mat displayImage = cv::Mat(Size(640, 480), CV_8UC3);
+		displayImage = Scalar(120);
+		// Convert to PCL data type
+		pcl_conversions::toPCL(out, *cloud);
+		
+		// Perform the actual filtering
+		pcl::VoxelGrid<pcl::PCLPointCloud2> sor;
+		sor.setInputCloud (cloudPtr);
+		sor.setLeafSize (0.005, 0.005, 0.005);
+		sor.filter (*cloud_filtered_blob);
+		
+		pcl::fromPCLPointCloud2 (*cloud_filtered_blob, *cloud_filtered);
 
-	pcl::CropBox<pcl::PointXYZRGB> cropFilter; 
-	cropFilter.setInputCloud (cloud_filtered); 
-	cropFilter.setMin(minPoint); 
-	cropFilter.setMax(maxPoint); 
+		ModelCoefficientsPtr coefficients (new pcl::ModelCoefficients);
+		
+		PointCloudPtr plane_points(new PointCloud), point_points_2d_hull(new PointCloud);
+			
+		std::vector<PointCloudPtr> object_clouds;
+		pcl::PointCloud<pcl::PointXYZRGB> combinedCloud;
+		
+		make_crop_box_marker(marker_publisher, base_frame, 0, 0.2, -1, 0.2, 1.3, 2, 1.3);
+	// 	Define your cube with two points in space: 
+		Eigen::Vector4f minPoint; 
+		minPoint[0]=0.2;  // define minimum point x 
+		minPoint[1]=-1;  // define minimum point y 
+		minPoint[2]=0.2;  // define minimum point z 
+		Eigen::Vector4f maxPoint; 
+		maxPoint[0]=1.5;  // define max point x 
+		maxPoint[1]=1;  // define max point y 
+		maxPoint[2]=1.5;  // define max point z 
 
-   	cropFilter.filter (*cloud_filtered); 
-	
-	interpretTableScene(cloud_filtered, coefficients, plane_points, point_points_2d_hull, object_clouds);
-	
-	int c = 0;
-	int ID_object = -1;
-	
-	for(auto cloudCluster: object_clouds){
-// 		get_cloud_matching(cloudCluster); //histogram matching
-	
-		ID_object = c;
-		combinedCloud += *cloudCluster;
-		combinedCloud.header = cloud_filtered->header;
-		c++;
-	}
-	
-	getTracker(object_clouds);
-	
-	stateDetection();
-	
-	sensor_msgs::PointCloud2 output;
-	
-	if((int)object_clouds.size() >= ID_object && ID_object >= 0){
-		pcl::toROSMsg(combinedCloud, output);
-		// Publish the data
-		pub.publish (output);
+		pcl::CropBox<pcl::PointXYZRGB> cropFilter; 
+		cropFilter.setInputCloud (cloud_filtered); 
+		cropFilter.setMin(minPoint); 
+		cropFilter.setMax(maxPoint); 
+
+		cropFilter.filter (*cloud_filtered); 
+		
+		interpretTableScene(cloud_filtered, coefficients, plane_points, point_points_2d_hull, object_clouds);
+		
+		int c = 0;
+		int ID_object = -1;
+		
+		for(auto cloudCluster: object_clouds){
+	// 		get_cloud_matching(cloudCluster); //histogram matching
+		
+			ID_object = c;
+			combinedCloud += *cloudCluster;
+			combinedCloud.header = cloud_filtered->header;
+			c++;
+		}
+		
+		getTracker(object_clouds);
+		
+		stateDetection();
+		
+		sensor_msgs::PointCloud2 output;
+		
+		if((int)object_clouds.size() >= ID_object && ID_object >= 0){
+			pcl::toROSMsg(combinedCloud, output);
+			// Publish the data
+			pub.publish (output);
+		}
 	}
 	
 }
