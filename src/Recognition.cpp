@@ -245,7 +245,7 @@ void rgb_pcl::stateDetection(){
 			double volume = tracker.getLength() * tracker.getWidth() * tracker.getHeight();
 			if(volume > 0.002){
 				state = state + "big ";
-			}else if(volume > 0.0006){
+			}else if(volume > 0.001){
 				state = state + "medium ";
 			}else{
 				state = state + "small ";
@@ -272,13 +272,13 @@ void rgb_pcl::stateDetection(){
 			double x_c = tracker.getPosition().x;
 			double y_c = tracker.getPosition().y;
 			
-			if(x_c > 0.76 && x_c < 0.84 && y_c > 0.01 && y_c < 0.09){
+			if(x_c > 0.76 && x_c < 0.84 && y_c > -0.04 && y_c < 0.04){
 				state = state + "back ";
-			}else if(x_c > 0.62 && x_c < 0.70 && y_c > -0.6 && y_c < -0.08){
+			}else if(x_c > 0.62 && x_c < 0.70 && y_c > -0.19 && y_c < -0.11){
 				state = state + "right ";
-			}else if(x_c > 0.62 && x_c < 0.70 && y_c > 0.15 && y_c < 0.24){
+			}else if(x_c > 0.66 && x_c < 0.74 && y_c > 0.12 && y_c < 0.20){
 				state = state + "left ";
-			}else if(x_c > 0.55 && x_c < 0.64 && y_c > 0.0 && y_c < 0.08){
+			}else if(x_c > 0.56 && x_c < 0.64 && y_c > -0.04 && y_c < 0.04){
 				state = state + "front ";
 			}
 			
