@@ -107,7 +107,9 @@ bool track_3d::updateTracker(Point3d position, double color, int size, pcl::Poin
 		}else if(cloud_point.z < limit_z[1]){
 			limit_z[1] = cloud_point.z;
 		}
-		colors[getColorHist(cloud_point)] ++;
+		int cat = getColorHist(cloud_point);
+		if(cat != -1)
+			colors[cat] ++;
 	}
 	
 	length = limit_x[0]-limit_x[1];
@@ -131,7 +133,7 @@ bool track_3d::updateTracker(Point3d position, double color, int size, pcl::Poin
 int track_3d::getColorHist(pcl::PointXYZRGB cloud_point){
 	double R, G, B;
 	double hue = 0;
-	int hue_cat = 0;
+	int hue_cat = -1;
 	
 	R = 0; G = 0; B = 0;
 	R += cloud_point.r; G += cloud_point.g; B += cloud_point.b; 
