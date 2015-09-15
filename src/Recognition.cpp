@@ -259,7 +259,7 @@ void rgb_pcl::stateDetection(){
 			double volume = tracker.getLength() * tracker.getWidth() * tracker.getHeight();
 			if(volume > 0.002){
 				state = state + "big ";
-			}else if(volume > 0.001){
+			}else if(volume > 0.0008){
 				state = state + "medium ";
 			}else{
 				state = state + "small ";
@@ -297,8 +297,9 @@ void rgb_pcl::stateDetection(){
 				message.clusters.push_back(output);
 				
 				cout<<state<<":: ";
+// 				cout<<volume<<" : ";
+// 				cout<<x_c<<" : "<<y_c<<endl;
 			}
-// 			cout<<x_c<<" : "<<y_c<<endl;
 		}
 		
 	}
