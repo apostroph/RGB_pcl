@@ -250,35 +250,25 @@ void rgb_pcl::stateDetection(){
 			}else{
 				state = state + "small ";
 			}
-
-// 			int hue_cat = tracker.getHue();
-// // 			cout<<tracker.getHue()<<endl;
-// 			
-// 			if(hue_cat >= 0 && hue_cat <= 70){
-// 				hue_cat = 1;
-// 			}else if(hue_cat >= 71 && hue_cat <= 160){
-// 				hue_cat = 2;
-// 			}else if(hue_cat >= 161 && hue_cat <= 250){
-// 				hue_cat = 3;
-// 			}else if(hue_cat >= 251 && hue_cat <= 310){
-// 				hue_cat = 4;
-// 			}else if(hue_cat >= 311 && hue_cat <= 360){
-// 				hue_cat = 5;
-// 			}
 			
 			state = state + tracker.getAllHues();
-// 			cout<<tracker.getHue()<<endl;
 			
 			double x_c = tracker.getPosition().x;
 			double y_c = tracker.getPosition().y;
 			
-			if(x_c > 0.76 && x_c < 0.84 && y_c > -0.04 && y_c < 0.04){
+			double back[2] = {0.82, 0.04};
+			double front[2] = {0.60, 0.042};
+			double left[2] = {0.686, 0.187};
+			double right[2] = {0.67, -0.118};
+			double sen = 0.04;
+			
+			if(x_c > (back[0]-sen) && x_c < (back[0]+sen) && y_c > (back[1]-sen) && y_c < (back[1]+sen)){
 				state = state + "back ";
-			}else if(x_c > 0.62 && x_c < 0.70 && y_c > -0.19 && y_c < -0.11){
+			}else if(x_c > (right[0]-sen) && x_c < (right[0]+sen) && y_c > (right[1]-sen) && y_c < (right[1]+sen)){
 				state = state + "right ";
-			}else if(x_c > 0.66 && x_c < 0.74 && y_c > 0.12 && y_c < 0.20){
+			}else if(x_c > (left[0]-sen) && x_c < (left[0]+sen) && y_c > (left[1]-sen) && y_c < (left[1]+sen)){
 				state = state + "left ";
-			}else if(x_c > 0.56 && x_c < 0.64 && y_c > -0.04 && y_c < 0.04){
+			}else if(x_c > (front[0]-sen) && x_c < (front[0]+sen) && y_c > (front[1]-sen) && y_c < (front[1]+sen)){
 				state = state + "front ";
 			}
 			
