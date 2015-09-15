@@ -134,9 +134,13 @@ int track_3d::getColorHist(pcl::PointXYZRGB cloud_point){
 	double R, G, B;
 	double hue = 0;
 	int hue_cat = -1;
+	double s = 0;
+	double max = 0;
 	
 	R = 0; G = 0; B = 0;
 	R += cloud_point.r; G += cloud_point.g; B += cloud_point.b; 
+	max = R > G ? R : G;
+	max = max > B ? max : B;
 	
 	double Cmax = maximum(R, G, B);
 	double Cmin = minimum(R, G, B);
@@ -151,16 +155,22 @@ int track_3d::getColorHist(pcl::PointXYZRGB cloud_point){
 	if(hue < 0)
 		hue += 360;
 	
-	if(hue >= 0 && hue <= 60){
-		hue_cat = 0;
-	}else if(hue >= 61 && hue <= 160){
-		hue_cat = 1;
-	}else if(hue >= 161 && hue <= 250){
-		hue_cat = 2;
-	}else if(hue >= 251 && hue <= 310){
-		hue_cat = 3;
-	}else if(hue >= 311 && hue <= 360){
-		hue_cat = 4;
+	if(max > 0){
+		s = delta/max;
+	}
+	
+	if(s > 0.1 && s < 0.8){
+		if(hue >= 0 && hue <= 60){
+			hue_cat = 0;
+		}else if(hue >= 61 && hue <= 160){
+			hue_cat = 1;
+		}else if(hue >= 161 && hue <= 250){
+			hue_cat = 2;
+		}else if(hue >= 251 && hue <= 310){
+			hue_cat = 3;
+		}else if(hue >= 311 && hue <= 360){
+			hue_cat = 4;
+		}
 	}
 	
 	return hue_cat;
