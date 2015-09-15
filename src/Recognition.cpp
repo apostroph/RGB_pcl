@@ -265,37 +265,39 @@ void rgb_pcl::stateDetection(){
 				state = state + "small ";
 			}
 			
-			state = state + tracker.getAllHues();
-			
-			double x_c = tracker.getPosition().x;
-			double y_c = tracker.getPosition().y;
-			
-			double back[2] = {0.82, 0.04};
-			double front[2] = {0.60, 0.042};
-			double left[2] = {0.686, 0.187};
-			double right[2] = {0.67, -0.118};
-			double sen = 0.04;
-			
-			if(x_c > (back[0]-sen) && x_c < (back[0]+sen) && y_c > (back[1]-sen) && y_c < (back[1]+sen)){
-				state = state + "back ";
-			}else if(x_c > (right[0]-sen) && x_c < (right[0]+sen) && y_c > (right[1]-sen) && y_c < (right[1]+sen)){
-				state = state + "right ";
-			}else if(x_c > (left[0]-sen) && x_c < (left[0]+sen) && y_c > (left[1]-sen) && y_c < (left[1]+sen)){
-				state = state + "left ";
-			}else if(x_c > (front[0]-sen) && x_c < (front[0]+sen) && y_c > (front[1]-sen) && y_c < (front[1]+sen)){
-				state = state + "front ";
+			if(tracker.getAllHues().size() != 0){
+				state = state + tracker.getAllHues();
+				
+				double x_c = tracker.getPosition().x;
+				double y_c = tracker.getPosition().y;
+				
+				double back[2] = {0.82, 0.04};
+				double front[2] = {0.60, 0.042};
+				double left[2] = {0.686, 0.187};
+				double right[2] = {0.67, -0.118};
+				double sen = 0.04;
+				
+				if(x_c > (back[0]-sen) && x_c < (back[0]+sen) && y_c > (back[1]-sen) && y_c < (back[1]+sen)){
+					state = state + "back ";
+				}else if(x_c > (right[0]-sen) && x_c < (right[0]+sen) && y_c > (right[1]-sen) && y_c < (right[1]+sen)){
+					state = state + "right ";
+				}else if(x_c > (left[0]-sen) && x_c < (left[0]+sen) && y_c > (left[1]-sen) && y_c < (left[1]+sen)){
+					state = state + "left ";
+				}else if(x_c > (front[0]-sen) && x_c < (front[0]+sen) && y_c > (front[1]-sen) && y_c < (front[1]+sen)){
+					state = state + "front ";
+				}
+				
+				message.states.push_back(state);
+				message.x.push_back(tracker.getGraspPosition().x);
+				message.y.push_back(tracker.getGraspPosition().y);
+				message.z.push_back(tracker.getGraspPosition().z);
+				
+				sensor_msgs::PointCloud2 output;
+				pcl::toROSMsg(tracker.getPointCloud(), output);
+				message.clusters.push_back(output);
+				
+				cout<<state<<":: ";
 			}
-			
-			message.states.push_back(state);
-			message.x.push_back(tracker.getGraspPosition().x);
-			message.y.push_back(tracker.getGraspPosition().y);
-			message.z.push_back(tracker.getGraspPosition().z);
-			
-			sensor_msgs::PointCloud2 output;
-			pcl::toROSMsg(tracker.getPointCloud(), output);
-			message.clusters.push_back(output);
-			
-			cout<<state<<":: ";
 // 			cout<<x_c<<" : "<<y_c<<endl;
 		}
 		
