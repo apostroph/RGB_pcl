@@ -277,14 +277,18 @@ void rgb_pcl::stateDetection(){
 				double right[2] = {0.67, -0.118};
 				double sen = 0.04;
 				
-				if(x_c > (back[0]-sen) && x_c < (back[0]+sen) && y_c > (back[1]-sen) && y_c < (back[1]+sen)){
-					state = state + "back ";
-				}else if(x_c > (right[0]-sen) && x_c < (right[0]+sen) && y_c > (right[1]-sen) && y_c < (right[1]+sen)){
-					state = state + "right ";
-				}else if(x_c > (left[0]-sen) && x_c < (left[0]+sen) && y_c > (left[1]-sen) && y_c < (left[1]+sen)){
-					state = state + "left ";
-				}else if(x_c > (front[0]-sen) && x_c < (front[0]+sen) && y_c > (front[1]-sen) && y_c < (front[1]+sen)){
-					state = state + "front ";
+				if(x_c < 0.8){
+					if(x_c > (back[0]-sen) && x_c < (back[0]+sen) && y_c > (back[1]-sen) && y_c < (back[1]+sen)){
+						state = state + "back ";
+					}else if(x_c > (right[0]-sen) && x_c < (right[0]+sen) && y_c > (right[1]-sen) && y_c < (right[1]+sen)){
+						state = state + "right ";
+					}else if(x_c > (left[0]-sen) && x_c < (left[0]+sen) && y_c > (left[1]-sen) && y_c < (left[1]+sen)){
+						state = state + "left ";
+					}else if(x_c > (front[0]-sen) && x_c < (front[0]+sen) && y_c > (front[1]-sen) && y_c < (front[1]+sen)){
+						state = state + "front ";
+					}
+				}else{
+					state = state + "out ";
 				}
 				
 				message.states.push_back(state);
