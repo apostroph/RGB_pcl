@@ -301,7 +301,7 @@ void rgb_pcl::stateDetection(){
 				message.clusters.push_back(output);
 				
 				cout<<state<<":: ";
-				cout<<volume<<" : ";
+// 				cout<<volume<<" : ";
 // 				cout<<x_c<<" : "<<y_c<<endl;
 			}
 		}

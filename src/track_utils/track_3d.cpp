@@ -203,12 +203,12 @@ string track_3d::getAllHues(){
 	int index = 1;
 	for(auto color: colors){
 // 		cout<<index<<" : "<<color<<" / ";
-		if(color > 100){
+		if(color > 150){
 			hues = hues + to_string(index) + " ";
 		}
 		index ++;
 	}
-	cout<<endl;
+// 	cout<<endl;
 	return hues;
 }
  
