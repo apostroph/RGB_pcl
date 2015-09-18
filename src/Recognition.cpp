@@ -297,7 +297,7 @@ void rgb_pcl::stateDetection(){
 				message.clusters.push_back(output);
 				
 				cout<<state<<":: ";
-// 				cout<<volume<<" : ";
+// 				cout<<tracker.getHue()<<" : ";
 // 				cout<<x_c<<" : "<<y_c<<endl;
 			}
 		}
