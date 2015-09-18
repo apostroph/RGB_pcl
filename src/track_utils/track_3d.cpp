@@ -113,7 +113,7 @@ bool track_3d::updateTracker(Point3d position, double color, int size, pcl::Poin
 	}
 	
 	length = limit_x[0]-limit_x[1];
-	width  = limit_y[0]-limit_y[1];condition
+	width  = limit_y[0]-limit_y[1];
 	height = limit_z[0]-limit_z[1];
 	
 	grasingPoint.x = limit_x[1];
