@@ -113,7 +113,7 @@ bool track_3d::updateTracker(Point3d position, double color, int size, pcl::Poin
 	}
 	
 	length = limit_x[0]-limit_x[1];
-	width  = limit_y[0]-limit_y[1];
+	width  = limit_y[0]-limit_y[1];condition
 	height = limit_z[0]-limit_z[1];
 	
 	grasingPoint.x = limit_x[1];
@@ -160,9 +160,9 @@ int track_3d::getColorHist(pcl::PointXYZRGB cloud_point){
 	}
 	
 	if(s > 0.2){
-		if(hue >= 0 && hue <= 31){
+		if(hue >= 0 && hue <= 20){
 			hue_cat = 5;
-		}else if(hue >= 31 && hue <= 60){
+		}else if(hue >= 21 && hue <= 60){
 			hue_cat = 0;
 		}else if(hue >= 61 && hue <= 160){
 			hue_cat = 1;
