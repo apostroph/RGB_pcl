@@ -252,7 +252,7 @@ void rgb_pcl::getCloudFeatures(cv::Point3d &position, double &hue, PointCloudPtr
 
 void rgb_pcl::stateDetection(){
 	RGB_pcl::States message;
-	cout<<"RGB: ";
+	ROS_INFO("Scene recognition");
 	for(auto tracker: trackerList){
 		if(!tracker.isGone()){
 			string state;
@@ -299,7 +299,6 @@ void rgb_pcl::stateDetection(){
 				sensor_msgs::PointCloud2 output;
 				pcl::toROSMsg(tracker.getPointCloud(), output);
 				message.clusters.push_back(output);
-				
 				cout<<state<<":: ";
 // 				cout<<volume<<" : ";
 // 				cout<<x_c<<" : "<<y_c<<endl;
